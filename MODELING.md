@@ -14,6 +14,7 @@
 ## 2. Document Shapes
 
 ### users
+```
 {
   _id: ObjectId,
   email: string (required, unique),
@@ -21,8 +22,9 @@
   name: string (required),
   createdAt: Date (required)
 }
-
+```
 ### projects
+```
 {
   _id: ObjectId,
   userId: ObjectId (required, reference to users),
@@ -30,8 +32,9 @@
   archived: boolean (default: false),
   createdAt: Date (required)
 }
-
+```
 ### tasks
+```
 {
   _id: ObjectId,
   projectId: ObjectId (required, reference to projects),
@@ -47,8 +50,9 @@
   ],
   createdAt: Date (required)
 }
-
+```
 ### notes
+```
 {
   _id: ObjectId,
   userId: ObjectId (required, reference to users),
@@ -57,7 +61,7 @@
   tags: [string],
   createdAt: Date (required)
 }
-
+```
 ---
 
 ## 3. Embed vs Reference — Decisions
