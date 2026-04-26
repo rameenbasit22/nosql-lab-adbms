@@ -1,67 +1,95 @@
 # Schema Design — Personal Productivity Hub
 
-> Fill in every section below. Keep answers concise.
-
 ---
 
 ## 1. Collections Overview
 
-Briefly describe each collection (1–2 sentences each):
+- **users** — Stores account information for each user including login credentials and profile details. Each user can own multiple projects.
 
-- **users** —
-- **projects** —
-- **tasks** —
-- **notes** —
+- **projects** — Stores projects created by users. Each project belongs to one user and can contain multiple tasks.
+
+- **tasks** — Stores tasks belonging to projects. Each task includes status, priority, tags, and embedded subtasks.
+
+- **notes** — Stores notes created by users. Notes can be standalone or optionally linked to a project.
 
 ---
 
 ## 2. Document Shapes
 
-For each collection, write the document shape (field name + type + required/optional):
-
 ### users
-```
+
 {
-  _id: ObjectId,
-  email: string (required, unique),
-  passwordHash: string (required),
-  name: string (required),
-  createdAt: Date (required)
+_id: ObjectId,
+email: string (required, unique),
+passwordHash: string (required),
+name: string (required),
+createdAt: Date (required)
 }
-```
+
+
+---
 
 ### projects
-```
-TODO
-```
+
+{
+_id: ObjectId,
+userId: ObjectId (required, reference to users),
+name: string (required),
+archived: boolean (default: false),
+createdAt: Date (required)
+}
+
+
+---
 
 ### tasks
-```
-TODO
-```
+
+{
+_id: ObjectId,
+projectId: ObjectId (required, reference to projects),
+title: string (required),
+status: string (required, enum: "todo" | "in-progress" | "done"),
+priority: number (required),
+tags: [string],
+subtasks: [
+{
+title: string (required),
+done: boolean (required)
+}
+],
+createdAt: Date (required)
+}
+
+
+---
 
 ### notes
-```
-TODO
-```
+
+{
+_id: ObjectId,
+userId: ObjectId (required, reference to users),
+projectId: ObjectId (optional, reference to projects),
+content: string (required),
+tags: [string],
+createdAt: Date (required)
+}
+
 
 ---
 
 ## 3. Embed vs Reference — Decisions
 
-For each relationship, state whether you embedded or referenced, and **why** (one sentence):
-
-| Relationship                       | Embed or Reference? | Why? |
-|-----------------------------------|---------------------|------|
-| Subtasks inside a task            |                     |      |
-| Tags on a task                    |                     |      |
-| Project → Task ownership          |                     |      |
-| Note → optional Project link      |                     |      |
+| Relationship                  | Type        | Reason |
+|------------------------------|------------|--------|
+| Subtasks inside a task       | Embed       | Subtasks depend fully on the parent task and are not useful independently. |
+| Tags on a task               | Embed       | Tags are small, simple values tightly coupled with tasks. |
+| Project → Task ownership     | Reference   | Tasks can be queried independently and may scale in large numbers. |
+| Note → optional Project link | Reference   | Notes can exist with or without a project, requiring flexibility. |
 
 ---
 
 ## 4. Schema Flexibility Example
 
-Name one field that exists on **some** documents but not **all** in the same collection. Explain why this is acceptable (or even useful) in MongoDB.
+The `projectId` field in the notes collection is optional and only exists when a note is linked to a project. Standalone notes do not include this field.
 
-> _Your answer here._
+This is acceptable in MongoDB because it supports flexible schemas, allowing documents in the same collection to have different structures without enforcing strict rules.
