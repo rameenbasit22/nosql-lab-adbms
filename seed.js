@@ -76,6 +76,7 @@ async function seed() {
     const tasks = [
       {
         _id: new ObjectId(),
+        ownerId: users[0]._id,
         projectId: projects[0]._id,
         title: "Design UI",
         status: "todo",
@@ -89,6 +90,7 @@ async function seed() {
       },
       {
         _id: new ObjectId(),
+        ownerId: users[0]._id,
         projectId: projects[0]._id,
         title: "Setup Backend",
         status: "in-progress",
@@ -101,6 +103,7 @@ async function seed() {
       },
       {
         _id: new ObjectId(),
+        ownerId: users[0]._id,
         projectId: projects[1]._id,
         title: "Login Screen",
         status: "todo",
@@ -111,6 +114,7 @@ async function seed() {
       },
       {
         _id: new ObjectId(),
+        ownerId: users[0]._id,
         projectId: projects[2]._id,
         title: "Train Model",
         status: "todo",
@@ -121,6 +125,7 @@ async function seed() {
       },
       {
         _id: new ObjectId(),
+        ownerId: users[0]._id,
         projectId: projects[3]._id,
         title: "Schema Design",
         status: "done",

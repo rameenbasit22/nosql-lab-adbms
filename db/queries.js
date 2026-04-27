@@ -426,8 +426,52 @@ async function projectTaskSummary(db, ownerId) {
  *       you only want to look up 10 projects, not all of them.
  */
 async function recentActivityFeed(db, ownerId) {
-  // TODO: implement
-  throw new Error('recentActivityFeed not implemented');
+  return await db.collection("tasks").aggregate([
+
+    // 1. Only this user's tasks
+    {
+      $match: { ownerId: ownerId }
+    },
+
+    // 2. Sort newest first
+    {
+      $sort: { createdAt: -1 }
+    },
+
+    // 3. Take latest 10
+    {
+      $limit: 10
+    },
+
+    // 4. Join with projects
+    {
+      $lookup: {
+        from: "projects",
+        localField: "projectId",
+        foreignField: "_id",
+        as: "project"
+      }
+    },
+
+    // 5. Flatten project array
+    {
+      $unwind: "$project"
+    },
+
+    // 6. Final output shape
+    {
+      $project: {
+        _id: 1,
+        title: 1,
+        status: 1,
+        priority: 1,
+        createdAt: 1,
+        projectId: 1,
+        projectName: "$project.name"
+      }
+    }
+
+  ]).toArray();
 }
 
 // =============================================================================
