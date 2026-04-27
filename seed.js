@@ -1,59 +1,173 @@
-// seed.js
-// =============================================================================
-//  Seed the database with realistic test data.
-//  Run with: npm run seed
-//
-//  Required minimum:
-//    - 2 users
-//    - 4 projects (split across the users)
-//    - 5 tasks (with embedded subtasks and tags arrays)
-//    - 5 notes (some attached to projects, some standalone)
-//
-//  Use the bcrypt module to hash passwords before inserting users.
-//  Use ObjectId references for relationships (projectId, ownerId).
-// =============================================================================
+const { MongoClient, ObjectId } = require("mongodb");
 
-require('dotenv').config();
-const bcrypt = require('bcryptjs');
-const { connect } = require('./db/connection');
+const uri = "mongodb://localhost:27017";
 
-(async () => {
-  const db = await connect();
+async function seed() {
+  const client = new MongoClient(uri);
 
-  // OPTIONAL: clear existing data so re-seeding is idempotent
-  // await db.collection('users').deleteMany({});
-  // await db.collection('projects').deleteMany({});
-  // await db.collection('tasks').deleteMany({});
-  // await db.collection('notes').deleteMany({});
+  try {
+    await client.connect();
 
-  // =============================================================================
-  //  TODO: Insert your seed data below.
-  //
-  //  Hints:
-  //    - Hash passwords:   const hash = await bcrypt.hash('password123', 10);
-  //    - Capture inserted ids:
-  //        const u = await db.collection('users').insertOne({ ... });
-  //        const userId = u.insertedId;
-  //    - Use those ids when inserting projects/tasks/notes.
-  //    - Demonstrate schema flexibility: include at least one optional field
-  //      on SOME documents but not all (e.g. dueDate on some tasks only).
-  //
-  //  Sample task shape:
-  //    {
-  //      ownerId: <ObjectId>,
-  //      projectId: <ObjectId>,
-  //      title: "Write report introduction",
-  //      status: "todo",
-  //      priority: 3,
-  //      tags: ["writing", "urgent"],
-  //      subtasks: [
-  //        { title: "Outline sections", done: true },
-  //        { title: "Draft", done: false }
-  //      ],
-  //      createdAt: new Date()
-  //    }
-  // =============================================================================
+    const db = client.db("productivityhub");
 
-  console.log('TODO: implement seed.js');
-  process.exit(0);
-})();
+    // CLEAR OLD DATA
+    await db.collection("users").deleteMany({});
+    await db.collection("projects").deleteMany({});
+    await db.collection("tasks").deleteMany({});
+    await db.collection("notes").deleteMany({});
+
+    // USERS
+    const users = [
+      {
+        _id: new ObjectId(),
+        email: "ali@test.com",
+        passwordHash: "123",
+        name: "Ali",
+        createdAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        email: "sara@test.com",
+        passwordHash: "456",
+        name: "Sara",
+        createdAt: new Date()
+      }
+    ];
+
+    await db.collection("users").insertMany(users);
+
+    // PROJECTS
+    const projects = [
+      {
+        _id: new ObjectId(),
+        userId: users[0]._id,
+        name: "Web App",
+        archived: false,
+        createdAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        userId: users[0]._id,
+        name: "Mobile App",
+        archived: false,
+        createdAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        userId: users[1]._id,
+        name: "AI Project",
+        archived: false,
+        createdAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        userId: users[1]._id,
+        name: "Database Lab",
+        archived: false,
+        createdAt: new Date()
+      }
+    ];
+
+    await db.collection("projects").insertMany(projects);
+
+    // TASKS
+    const tasks = [
+      {
+        _id: new ObjectId(),
+        projectId: projects[0]._id,
+        title: "Design UI",
+        status: "todo",
+        priority: 1,
+        tags: ["ui"],
+        subtasks: [
+          { title: "Wireframe", done: false },
+          { title: "Mockup", done: false }
+        ],
+        createdAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        projectId: projects[0]._id,
+        title: "Setup Backend",
+        status: "in-progress",
+        priority: 2,
+        tags: ["backend"],
+        subtasks: [
+          { title: "API setup", done: true }
+        ],
+        createdAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        projectId: projects[1]._id,
+        title: "Login Screen",
+        status: "todo",
+        priority: 1,
+        tags: ["mobile"],
+        subtasks: [],
+        createdAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        projectId: projects[2]._id,
+        title: "Train Model",
+        status: "todo",
+        priority: 3,
+        tags: ["ai"],
+        subtasks: [],
+        createdAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        projectId: projects[3]._id,
+        title: "Schema Design",
+        status: "done",
+        priority: 1,
+        tags: ["mongodb"],
+        subtasks: [
+          { title: "ER Diagram", done: true }
+        ],
+        createdAt: new Date()
+      }
+    ];
+
+    await db.collection("tasks").insertMany(tasks);
+
+    // NOTES
+    const notes = [
+      {
+        _id: new ObjectId(),
+        userId: users[0]._id,
+        projectId: projects[0]._id,
+        content: "Frontend ideas",
+        tags: ["ui"],
+        createdAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        userId: users[0]._id,
+        content: "General notes",
+        tags: ["personal"],
+        createdAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        userId: users[1]._id,
+        projectId: projects[2]._id,
+        content: "AI notes",
+        tags: ["ai"],
+        createdAt: new Date()
+      }
+    ];
+
+    await db.collection("notes").insertMany(notes);
+
+    console.log("✅ Database seeded successfully!");
+  } catch (err) {
+    console.error("❌ Error seeding database:", err);
+  } finally {
+    await client.close();
+  }
+}
+
+seed();
