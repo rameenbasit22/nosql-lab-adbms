@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const { MongoClient, ObjectId } = require("mongodb");
 
 const uri = "mongodb://localhost:27017";
@@ -8,7 +9,8 @@ async function seed() {
   try {
     await client.connect();
 
-    const db = client.db("productivityhub");
+    const db = client.db("productivity_hub");
+
 
     // CLEAR OLD DATA
     await db.collection("users").deleteMany({});
@@ -21,14 +23,14 @@ async function seed() {
       {
         _id: new ObjectId(),
         email: "ali@test.com",
-        passwordHash: "123",
+        passwordHash: await bcrypt.hash("123", 10),
         name: "Ali",
         createdAt: new Date()
       },
       {
         _id: new ObjectId(),
         email: "sara@test.com",
-        passwordHash: "456",
+        passwordHash: await bcrypt.hash("456", 10),
         name: "Sara",
         createdAt: new Date()
       }
