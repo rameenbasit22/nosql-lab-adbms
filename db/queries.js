@@ -366,7 +366,7 @@ async function deleteTask(db, taskId) {
  */
 async function searchNotes(db, ownerId, tags, projectId) {
   const filter = {
-    ownerId,
+    userId: ownerId,
     tags: { $in: tags }
   };
 
